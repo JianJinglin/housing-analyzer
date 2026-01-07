@@ -30,6 +30,28 @@ interface StockInvestmentResult {
   netGainAfterRent: number; // 扣除租金后的净收益
 }
 
+// 共同借款人
+interface CoBorrower {
+  name: string;
+  monthlyIncome: number;
+}
+
+// 贷款类型配置
+const LOAN_TYPES = {
+  conventional: {
+    name: 'Conventional (普通贷款)',
+    interestRate: 0.065,
+    minDownPayment: 0.2,
+    pmi: 150,
+  },
+  va: {
+    name: 'VA Loan (退伍军人贷款)',
+    interestRate: 0.055,
+    minDownPayment: 0,
+    pmi: 0,
+  },
+};
+
 // 默认参数
 const defaultXiamen: XiamenProperty = {
   marketValue: 2800000,
@@ -44,29 +66,9 @@ const defaultSDOptions: SDPropertyOption[] = [
   { type: '3B2B', price: 750000, monthlyRent: 1100, rooms: 3, appreciationRate: 0.035, hoaAndTax: 1000 },
 ];
 
-const defaultBorrowers: Borrower[] = [
-  {
-    name: '我 (Jinglin)',
-    monthlyIncome: 3500,
-    loanOptions: [
-      { name: 'Conventional', type: 'conventional', interestRate: 0.065, minDownPayment: 0.2, pmi: 150 },
-    ]
-  },
-  {
-    name: 'Gavin',
-    monthlyIncome: 8000,
-    loanOptions: [
-      { name: 'Conventional', type: 'conventional', interestRate: 0.065, minDownPayment: 0.2, pmi: 150 },
-    ]
-  },
-  {
-    name: '小雨 (VA Loan)',
-    monthlyIncome: 6000,
-    loanOptions: [
-      { name: 'VA Loan', type: 'va', interestRate: 0.055, minDownPayment: 0, pmi: 0 },
-      { name: 'Conventional', type: 'conventional', interestRate: 0.065, minDownPayment: 0.2, pmi: 150 },
-    ]
-  },
+// 默认共同借款人
+const defaultCoBorrowers: CoBorrower[] = [
+  { name: 'JJ', monthlyIncome: 3900 },
 ];
 
 function formatCurrency(value: number): string {
@@ -188,18 +190,69 @@ export default function App() {
   // 状态管理
   const [xiamen, setXiamen] = useState(defaultXiamen);
   const [sdOptions, setSDOptions] = useState(defaultSDOptions);
-  const [borrowers, setBorrowers] = useState(defaultBorrowers);
   const [sdRentIfNotBuying, setSDRentIfNotBuying] = useState(850);
   const [analysisYears, setAnalysisYears] = useState(5);
 
+  // 贷款配置
+  const [loanType, setLoanType] = useState<'conventional' | 'va'>('va');
+  const [coBorrowers, setCoBorrowers] = useState<CoBorrower[]>(defaultCoBorrowers);
+  const [customInterestRate, setCustomInterestRate] = useState<number | null>(null); // null表示使用默认利率
+  const [newBorrowerName, setNewBorrowerName] = useState('');
+  const [newBorrowerIncome, setNewBorrowerIncome] = useState('');
+
   // 当前选中的场景参数
   const [selectedPropertyType, setSelectedPropertyType] = useState<'1B1B' | '2B2B' | '3B2B'>('2B2B');
-  const [selectedBorrowerIndex, setSelectedBorrowerIndex] = useState(2); // 小雨
   const [downPaymentPercent, setDownPaymentPercent] = useState(0.2);
   const [roomsToRent, setRoomsToRent] = useState(2);
 
   // 股市对比参数
   const [stockReturnRate, setStockReturnRate] = useState(0.06); // 6%年化
+
+  // 计算总收入
+  const totalMonthlyIncome = useMemo(() => {
+    return coBorrowers.reduce((sum, b) => sum + b.monthlyIncome, 0);
+  }, [coBorrowers]);
+
+  // 当前贷款配置
+  const currentLoanConfig = useMemo(() => {
+    const base = LOAN_TYPES[loanType];
+    return {
+      ...base,
+      interestRate: customInterestRate !== null ? customInterestRate : base.interestRate,
+    };
+  }, [loanType, customInterestRate]);
+
+  // 构建当前借款人对象（用于计算）
+  const currentBorrower: Borrower = useMemo(() => ({
+    name: coBorrowers.map(b => b.name).join(' + '),
+    monthlyIncome: totalMonthlyIncome,
+    loanOptions: [{
+      name: currentLoanConfig.name,
+      type: loanType,
+      interestRate: currentLoanConfig.interestRate,
+      minDownPayment: currentLoanConfig.minDownPayment,
+      pmi: currentLoanConfig.pmi,
+    }],
+  }), [coBorrowers, totalMonthlyIncome, currentLoanConfig, loanType]);
+
+  // 添加借款人
+  const handleAddBorrower = useCallback(() => {
+    if (newBorrowerName.trim() && newBorrowerIncome) {
+      setCoBorrowers([...coBorrowers, {
+        name: newBorrowerName.trim(),
+        monthlyIncome: Number(newBorrowerIncome),
+      }]);
+      setNewBorrowerName('');
+      setNewBorrowerIncome('');
+    }
+  }, [newBorrowerName, newBorrowerIncome, coBorrowers]);
+
+  // 删除借款人
+  const handleRemoveBorrower = useCallback((index: number) => {
+    if (coBorrowers.length > 1) {
+      setCoBorrowers(coBorrowers.filter((_, i) => i !== index));
+    }
+  }, [coBorrowers]);
 
   // 计算厦门到手金额
   const xiamenNetProceeds = useMemo(() => calculateXiamenNetProceeds(xiamen), [xiamen]);
@@ -221,59 +274,55 @@ export default function App() {
     };
     results.push(calculateScenario(baseline, xiamen, analysisYears));
 
-    // 所有组合场景
+    // 使用当前借款人配置生成所有首付组合
     const dpOptions = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8];
 
     for (const property of sdOptions) {
-      for (let bi = 0; bi < borrowers.length; bi++) {
-        const borrower = borrowers[bi];
-        for (const dp of dpOptions) {
-          const loanOption = getBestLoanOption(borrower, dp);
-          if (!loanOption) continue;
+      for (const dp of dpOptions) {
+        const loanOption = getBestLoanOption(currentBorrower, dp);
+        if (!loanOption) continue;
 
-          // 检查首付是否够
-          const downPayment = property.price * dp;
-          const closingCosts = property.price * 0.03;
-          if (downPayment + closingCosts > xiamenNetProceeds) continue;
+        // 检查首付是否够
+        const downPayment = property.price * dp;
+        const closingCosts = property.price * 0.03;
+        if (downPayment + closingCosts > xiamenNetProceeds) continue;
 
-          for (let rooms = 0; rooms <= property.rooms; rooms++) {
-            const scenario: InvestmentScenario = {
-              id: `${property.type}-${borrower.name}-${dp * 100}%-${rooms}rooms`,
-              name: `${property.type} (${borrower.name}, ${(dp * 100).toFixed(0)}%首付, 出租${rooms}间)`,
-              sellXiamen: true,
-              sdProperty: property,
-              downPaymentPercent: dp,
-              borrower,
-              roomsToRent: rooms,
-              sdRentIfNotBuying,
-            };
-            results.push(calculateScenario(scenario, xiamen, analysisYears));
-          }
+        for (let rooms = 0; rooms <= property.rooms; rooms++) {
+          const scenario: InvestmentScenario = {
+            id: `${property.type}-${dp * 100}%-${rooms}rooms`,
+            name: `${property.type} (${(dp * 100).toFixed(0)}%首付, 出租${rooms}间)`,
+            sellXiamen: true,
+            sdProperty: property,
+            downPaymentPercent: dp,
+            borrower: currentBorrower,
+            roomsToRent: rooms,
+            sdRentIfNotBuying,
+          };
+          results.push(calculateScenario(scenario, xiamen, analysisYears));
         }
       }
     }
 
     return results;
-  }, [xiamen, sdOptions, borrowers, sdRentIfNotBuying, analysisYears]);
+  }, [xiamen, sdOptions, currentBorrower, sdRentIfNotBuying, analysisYears, xiamenNetProceeds]);
 
   // 当前选中场景的计算结果
   const currentResult = useMemo(() => {
     const property = sdOptions.find(p => p.type === selectedPropertyType)!;
-    const borrower = borrowers[selectedBorrowerIndex];
 
     const scenario: InvestmentScenario = {
       id: 'current',
-      name: `${selectedPropertyType} (${borrower.name}, ${(downPaymentPercent * 100).toFixed(0)}%首付, 出租${roomsToRent}间)`,
+      name: `${selectedPropertyType} (${currentBorrower.name}, ${(downPaymentPercent * 100).toFixed(0)}%首付, 出租${roomsToRent}间)`,
       sellXiamen: true,
       sdProperty: property,
       downPaymentPercent,
-      borrower,
+      borrower: currentBorrower,
       roomsToRent: Math.min(roomsToRent, property.rooms),
       sdRentIfNotBuying,
     };
 
     return calculateScenario(scenario, xiamen, analysisYears);
-  }, [selectedPropertyType, selectedBorrowerIndex, downPaymentPercent, roomsToRent, xiamen, sdOptions, borrowers, sdRentIfNotBuying, analysisYears]);
+  }, [selectedPropertyType, downPaymentPercent, roomsToRent, xiamen, sdOptions, currentBorrower, sdRentIfNotBuying, analysisYears]);
 
   // 基准场景结果
   const baselineResult = allResults.find(r => r.scenario.id === 'baseline')!;
@@ -324,11 +373,10 @@ export default function App() {
   // 不同首付比例的收益曲线
   const dpCurveData = useMemo(() => {
     const property = sdOptions.find(p => p.type === selectedPropertyType)!;
-    const borrower = borrowers[selectedBorrowerIndex];
     const data = [];
 
     for (let dp = 0; dp <= 0.8; dp += 0.05) {
-      const loanOption = getBestLoanOption(borrower, dp);
+      const loanOption = getBestLoanOption(currentBorrower, dp);
       if (!loanOption) continue;
 
       const downPayment = property.price * dp;
@@ -341,7 +389,7 @@ export default function App() {
         sellXiamen: true,
         sdProperty: property,
         downPaymentPercent: dp,
-        borrower,
+        borrower: currentBorrower,
         roomsToRent: Math.min(roomsToRent, property.rooms),
         sdRentIfNotBuying,
       };
@@ -359,7 +407,7 @@ export default function App() {
     }
 
     return data;
-  }, [selectedPropertyType, selectedBorrowerIndex, roomsToRent, xiamen, sdOptions, borrowers, sdRentIfNotBuying, analysisYears, xiamenNetProceeds]);
+  }, [selectedPropertyType, roomsToRent, xiamen, sdOptions, currentBorrower, sdRentIfNotBuying, analysisYears, xiamenNetProceeds]);
 
   const selectedProperty = sdOptions.find(p => p.type === selectedPropertyType)!;
 
@@ -500,37 +548,21 @@ export default function App() {
             </div>
           </div>
 
-          {/* 贷款人选择 */}
+          {/* 贷款类型 */}
           <div className="param-section">
-            <h3>贷款人</h3>
+            <h3>贷款类型</h3>
             <div className="param-row">
-              <label>选择贷款人</label>
+              <label>选择贷款类型</label>
               <select
-                value={selectedBorrowerIndex}
-                onChange={e => setSelectedBorrowerIndex(Number(e.target.value))}
-              >
-                {borrowers.map((b, i) => (
-                  <option key={b.name} value={i}>
-                    {b.name} - {formatCurrency(b.monthlyIncome)}/月
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="param-row">
-              <label>月收入 (USD)</label>
-              <input
-                type="number"
-                value={borrowers[selectedBorrowerIndex].monthlyIncome}
+                value={loanType}
                 onChange={e => {
-                  const newBorrowers = [...borrowers];
-                  newBorrowers[selectedBorrowerIndex] = {
-                    ...newBorrowers[selectedBorrowerIndex],
-                    monthlyIncome: Number(e.target.value)
-                  };
-                  setBorrowers(newBorrowers);
+                  setLoanType(e.target.value as 'conventional' | 'va');
+                  setCustomInterestRate(null); // 重置自定义利率
                 }}
-              />
+              >
+                <option value="conventional">Conventional (普通贷款) - 20%首付起</option>
+                <option value="va">VA Loan (退伍军人贷款) - 0%首付</option>
+              </select>
             </div>
 
             <div className="param-row">
@@ -538,19 +570,61 @@ export default function App() {
               <input
                 type="number"
                 step="0.125"
-                value={borrowers[selectedBorrowerIndex].loanOptions[0].interestRate * 100}
-                onChange={e => {
-                  const newBorrowers = [...borrowers];
-                  newBorrowers[selectedBorrowerIndex] = {
-                    ...newBorrowers[selectedBorrowerIndex],
-                    loanOptions: newBorrowers[selectedBorrowerIndex].loanOptions.map(lo => ({
-                      ...lo,
-                      interestRate: Number(e.target.value) / 100
-                    }))
-                  };
-                  setBorrowers(newBorrowers);
-                }}
+                value={(customInterestRate !== null ? customInterestRate : LOAN_TYPES[loanType].interestRate) * 100}
+                onChange={e => setCustomInterestRate(Number(e.target.value) / 100)}
               />
+              <span className="slider-value">
+                默认: {(LOAN_TYPES[loanType].interestRate * 100).toFixed(2)}%
+              </span>
+            </div>
+          </div>
+
+          {/* 借款人 */}
+          <div className="param-section">
+            <h3>借款人 (总收入: {formatCurrency(totalMonthlyIncome)}/月)</h3>
+
+            {/* 已添加的借款人列表 */}
+            <div className="borrowers-list">
+              {coBorrowers.map((b, i) => (
+                <div key={i} className="borrower-item">
+                  <span className="borrower-name">{b.name}</span>
+                  <span className="borrower-income">{formatCurrency(b.monthlyIncome)}/月</span>
+                  {coBorrowers.length > 1 && (
+                    <button
+                      className="remove-btn"
+                      onClick={() => handleRemoveBorrower(i)}
+                      title="移除"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 添加新借款人 */}
+            <div className="add-borrower">
+              <input
+                type="text"
+                placeholder="姓名"
+                value={newBorrowerName}
+                onChange={e => setNewBorrowerName(e.target.value)}
+                className="borrower-input name"
+              />
+              <input
+                type="number"
+                placeholder="月收入"
+                value={newBorrowerIncome}
+                onChange={e => setNewBorrowerIncome(e.target.value)}
+                className="borrower-input income"
+              />
+              <button
+                className="add-btn"
+                onClick={handleAddBorrower}
+                disabled={!newBorrowerName.trim() || !newBorrowerIncome}
+              >
+                + 添加
+              </button>
             </div>
           </div>
 
@@ -893,8 +967,8 @@ export default function App() {
             <ResponsiveContainer width="100%" height={300}>
               <ScatterChart>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="cashflowAPY" name="Cashflow APY" label={{ value: 'Cashflow APY (%)', position: 'insideBottom', offset: -5 }} domain={['auto', 'auto']} />
-                <YAxis dataKey="year5ROI" name={`${analysisYears}年年化ROI`} label={{ value: `${analysisYears}年年化ROI (%)`, angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} />
+                <XAxis dataKey="cashflowAPY" name="Cashflow APY" label={{ value: 'Cashflow APY (%)', position: 'insideBottom', offset: -5 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toFixed(1)} />
+                <YAxis dataKey="year5ROI" name={`${analysisYears}年年化ROI`} label={{ value: `${analysisYears}年年化ROI (%)`, angle: -90, position: 'insideLeft' }} domain={['auto', 'auto']} tickFormatter={(v) => v.toFixed(1)} />
                 <Tooltip
                   content={({ payload }) => {
                     if (!payload || payload.length === 0) return null;
