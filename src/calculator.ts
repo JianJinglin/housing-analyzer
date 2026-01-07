@@ -214,7 +214,7 @@ export function calculateScenario(
 
 // 生成多场景对比
 export function generateScenarios(
-  xiamen: XiamenProperty,
+  _xiamen: XiamenProperty,
   sdOptions: SDPropertyOption[],
   borrowers: Borrower[],
   sdRentIfNotBuying: number

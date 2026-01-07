@@ -6,7 +6,6 @@ import {
 import {
   calculateScenario,
   calculateXiamenNetProceeds,
-  calculateMonthlyMortgage,
   getBestLoanOption
 } from './calculator';
 import type {
@@ -611,9 +610,11 @@ export default function App() {
                 <YAxis yAxisId="left" label={{ value: 'APY (%)', angle: -90, position: 'insideLeft' }} />
                 <YAxis yAxisId="right" orientation="right" label={{ value: '月现金流', angle: 90, position: 'insideRight' }} />
                 <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (name === 'monthlyEffectiveCashflow') return formatCurrency(value);
-                    return formatPercent(value);
+                  formatter={(value) => {
+                    if (typeof value === 'number') {
+                      return value > 100 ? formatCurrency(value) : formatPercent(value);
+                    }
+                    return value;
                   }}
                 />
                 <Legend />
