@@ -1,0 +1,419 @@
+/* 房产投资分析器样式 */
+
+* {
+  box-sizing: border-box;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+}
+
+.header {
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  margin: 0;
+  background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 300px 1fr 400px;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  min-height: 0;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-y: auto;
+}
+
+.panel h2 {
+  font-size: 1.2rem;
+  margin: 0 0 15px;
+  color: #00d4ff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+/* 参数面板 */
+.params-panel {
+  font-size: 0.85rem;
+}
+
+.param-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.param-section:last-child {
+  border-bottom: none;
+}
+
+.param-section h3 {
+  font-size: 0.95rem;
+  margin: 0 0 12px;
+  color: #ffc107;
+}
+
+.param-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.param-row label {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.param-row input[type="number"],
+.param-row input[type="text"],
+.param-row select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.param-row input[type="range"] {
+  width: 100%;
+  accent-color: #00d4ff;
+}
+
+.slider-value {
+  font-size: 0.8rem;
+  color: #00d4ff;
+  text-align: right;
+}
+
+.info-box {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.info-box strong {
+  color: #00d4ff;
+}
+
+/* 结果面板 */
+.results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.metric-card.primary {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15));
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.metric-card.warning {
+  background: rgba(255, 87, 87, 0.15);
+  border-color: rgba(255, 87, 87, 0.3);
+}
+
+.metric-card.highlight-green {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.metric-sub {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* 对比表格 */
+.comparison-section h3 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+  color: #ffc107;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comparison-table th {
+  color: #888;
+  font-weight: normal;
+}
+
+.comparison-table th:first-child,
+.comparison-table td:first-child {
+  text-align: left;
+}
+
+.comparison-table .positive {
+  color: #4caf50;
+}
+
+.comparison-table .negative {
+  color: #f44336;
+}
+
+/* 资金流向 */
+.flow-section h3 {
+  font-size: 1rem;
+  margin: 0 0 15px;
+  color: #ffc107;
+}
+
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.flow-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 100px;
+  text-align: center;
+}
+
+.flow-item.source {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.flow-item.highlight {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.flow-label {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.flow-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  margin-top: 5px;
+}
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: #555;
+}
+
+/* 可视化面板 */
+.viz-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chart-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.chart-section h3 {
+  font-size: 0.9rem;
+  margin: 0 0 15px;
+  color: #ffc107;
+}
+
+.custom-tooltip {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 0.8rem;
+}
+
+.custom-tooltip p {
+  margin: 3px 0;
+}
+
+.legend-custom {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.red {
+  background: #ff0000;
+}
+
+.dot.green {
+  background: #00ff00;
+}
+
+.dot.purple {
+  background: #8884d8;
+}
+
+/* 问题定义 */
+.problem-definition {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.problem-definition h3 {
+  font-size: 0.9rem;
+  margin: 0 0 12px;
+  color: #ffc107;
+}
+
+.formula-box {
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.formula-box p {
+  margin: 8px 0;
+}
+
+.formula-box ul {
+  margin: 5px 0;
+  padding-left: 20px;
+}
+
+.formula-box li {
+  margin: 4px 0;
+  color: #ccc;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Recharts 样式覆盖 */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.recharts-text {
+  fill: #888;
+  font-size: 0.7rem;
+}
+
+.recharts-legend-item-text {
+  color: #aaa !important;
+}
+
+/* 响应式 */
+@media (max-width: 1400px) {
+  .main-content {
+    grid-template-columns: 280px 1fr 350px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-content {
+    padding: 10px;
+    gap: 15px;
+  }
+}
