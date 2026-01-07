@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ScatterChart, Scatter, ResponsiveContainer, ReferenceLine
+  ScatterChart, Scatter, ResponsiveContainer, ReferenceLine,
+  BarChart, Bar
 } from 'recharts';
 import {
   calculateScenario,
@@ -16,6 +17,18 @@ import type {
   CalculationResult
 } from './types';
 import './App.css';
+
+// 股市投资计算
+interface StockInvestmentResult {
+  initialInvestment: number; // 首付+closing cost
+  stockReturn: number; // 股市年化收益率
+  yearNValue: number; // N年后股票价值
+  yearNGain: number; // N年总收益
+  annualizedROI: number; // 年化收益率
+  // 同时继续租房的成本
+  totalRentPaid: number; // N年总租金支出
+  netGainAfterRent: number; // 扣除租金后的净收益
+}
 
 // 默认参数
 const defaultXiamen: XiamenProperty = {
@@ -69,6 +82,108 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`;
 }
 
+// 计算股市投资收益
+function calculateStockInvestment(
+  initialInvestment: number,
+  annualReturn: number,
+  years: number,
+  monthlyRent: number
+): StockInvestmentResult {
+  const yearNValue = initialInvestment * Math.pow(1 + annualReturn, years);
+  const yearNGain = yearNValue - initialInvestment;
+  const totalRentPaid = monthlyRent * 12 * years;
+  const netGainAfterRent = yearNGain - totalRentPaid;
+  const annualizedROI = (Math.pow(yearNValue / initialInvestment, 1 / years) - 1) * 100;
+
+  return {
+    initialInvestment,
+    stockReturn: annualReturn,
+    yearNValue,
+    yearNGain,
+    annualizedROI,
+    totalRentPaid,
+    netGainAfterRent,
+  };
+}
+
+// 生成CSV内容
+function generateCSV(
+  xiamen: XiamenProperty,
+  currentResult: CalculationResult,
+  stockResult: StockInvestmentResult,
+  analysisYears: number,
+  sdRentIfNotBuying: number,
+  stockReturnRate: number
+): string {
+  const rows: string[][] = [];
+
+  // 参数部分
+  rows.push(['=== 输入参数 ===', '']);
+  rows.push(['厦门房产市值 (RMB)', xiamen.marketValue.toString()]);
+  rows.push(['厦门月租金 (RMB)', xiamen.monthlyRent.toString()]);
+  rows.push(['汇率 (CNY/USD)', xiamen.exchangeRate.toString()]);
+  rows.push(['卖房成本率', (xiamen.sellingCostRate * 100).toFixed(1) + '%']);
+  rows.push(['SD租房月租 (USD)', sdRentIfNotBuying.toString()]);
+  rows.push(['分析年限', analysisYears.toString()]);
+  rows.push(['股市年化收益率假设', (stockReturnRate * 100).toFixed(1) + '%']);
+  rows.push(['']);
+
+  // 当前方案参数
+  if (currentResult.scenario.sdProperty) {
+    rows.push(['=== 当前购房方案 ===', '']);
+    rows.push(['房型', currentResult.scenario.sdProperty.type]);
+    rows.push(['房价 (USD)', currentResult.scenario.sdProperty.price.toString()]);
+    rows.push(['首付比例', (currentResult.scenario.downPaymentPercent * 100).toFixed(0) + '%']);
+    rows.push(['贷款人', currentResult.scenario.borrower?.name || 'N/A']);
+    rows.push(['出租房间数', currentResult.scenario.roomsToRent.toString()]);
+    rows.push(['']);
+  }
+
+  // 购房方案结果
+  rows.push(['=== 购房方案计算结果 ===', '']);
+  rows.push(['厦门卖房到手 (USD)', currentResult.initialInvestment.toFixed(0)]);
+  rows.push(['首付 (USD)', currentResult.downPayment.toFixed(0)]);
+  rows.push(['Closing Cost (USD)', currentResult.closingCosts.toFixed(0)]);
+  rows.push(['剩余现金 (USD)', currentResult.remainingCash.toFixed(0)]);
+  rows.push(['月供 P&I (USD)', currentResult.monthlyMortgage.toFixed(0)]);
+  rows.push(['月HOA+税+保险 (USD)', currentResult.monthlyHOATax.toFixed(0)]);
+  rows.push(['月租金收入 (USD)', currentResult.monthlyRentalIncome.toFixed(0)]);
+  rows.push(['月省下租金/隐含收益 (USD)', currentResult.monthlyImputedRent.toFixed(0)]);
+  rows.push(['月等效现金流 (USD)', currentResult.monthlyEffectiveCashflow.toFixed(0)]);
+  rows.push(['年等效现金流 (USD)', currentResult.annualEffectiveCashflow.toFixed(0)]);
+  rows.push(['等效年收益率 APY', currentResult.effectiveCashflowAPY.toFixed(2) + '%']);
+  rows.push([`${analysisYears}年后房产价值 (USD)`, currentResult.year5PropertyValue.toFixed(0)]);
+  rows.push([`${analysisYears}年后房产净值 (USD)`, currentResult.year5Equity.toFixed(0)]);
+  rows.push([`${analysisYears}年总回报 (USD)`, currentResult.year5TotalReturn.toFixed(0)]);
+  rows.push([`${analysisYears}年年化ROI`, currentResult.year5AnnualizedROI.toFixed(2) + '%']);
+  rows.push(['DTI', currentResult.dti.toFixed(2) + '%']);
+  rows.push(['']);
+
+  // 股市投资对比
+  rows.push(['=== 股市投资对比 (首付投入股市) ===', '']);
+  rows.push(['投入本金 (USD)', stockResult.initialInvestment.toFixed(0)]);
+  rows.push(['股市年化收益率', (stockResult.stockReturn * 100).toFixed(1) + '%']);
+  rows.push([`${analysisYears}年后股票价值 (USD)`, stockResult.yearNValue.toFixed(0)]);
+  rows.push([`${analysisYears}年股票收益 (USD)`, stockResult.yearNGain.toFixed(0)]);
+  rows.push([`${analysisYears}年租房总支出 (USD)`, stockResult.totalRentPaid.toFixed(0)]);
+  rows.push([`扣除租金后净收益 (USD)`, stockResult.netGainAfterRent.toFixed(0)]);
+  rows.push(['']);
+
+  // 对比总结
+  const buyingNetWorth = currentResult.year5Equity + currentResult.remainingCash + currentResult.annualEffectiveCashflow * analysisYears;
+  const stockNetWorth = stockResult.yearNValue;
+  const buyingVsStock = buyingNetWorth - stockNetWorth;
+
+  rows.push(['=== 对比总结 ===', '']);
+  rows.push([`${analysisYears}年后购房净资产 (USD)`, buyingNetWorth.toFixed(0)]);
+  rows.push([`${analysisYears}年后股市净值 (USD)`, stockNetWorth.toFixed(0)]);
+  rows.push(['购房 vs 股市差异 (USD)', buyingVsStock.toFixed(0)]);
+  rows.push(['结论', buyingVsStock > 0 ? '购房方案更优' : '股市投资更优']);
+
+  // 转换为CSV字符串
+  return rows.map(row => row.join(',')).join('\n');
+}
+
 export default function App() {
   // 状态管理
   const [xiamen, setXiamen] = useState(defaultXiamen);
@@ -82,6 +197,9 @@ export default function App() {
   const [selectedBorrowerIndex, setSelectedBorrowerIndex] = useState(2); // 小雨
   const [downPaymentPercent, setDownPaymentPercent] = useState(0.2);
   const [roomsToRent, setRoomsToRent] = useState(2);
+
+  // 股市对比参数
+  const [stockReturnRate, setStockReturnRate] = useState(0.06); // 6%年化
 
   // 计算厦门到手金额
   const xiamenNetProceeds = useMemo(() => calculateXiamenNetProceeds(xiamen), [xiamen]);
@@ -159,6 +277,37 @@ export default function App() {
 
   // 基准场景结果
   const baselineResult = allResults.find(r => r.scenario.id === 'baseline')!;
+
+  // 股市投资计算 (首付+closing cost投入股市)
+  const stockResult = useMemo(() => {
+    const investment = currentResult.downPayment + currentResult.closingCosts;
+    return calculateStockInvestment(investment, stockReturnRate, analysisYears, sdRentIfNotBuying);
+  }, [currentResult.downPayment, currentResult.closingCosts, stockReturnRate, analysisYears, sdRentIfNotBuying]);
+
+  // 购房 vs 股市对比数据
+  const stockComparisonData = useMemo(() => {
+    const buyingNetWorth = currentResult.year5Equity + currentResult.remainingCash + currentResult.annualEffectiveCashflow * analysisYears;
+    const stockNetWorth = stockResult.yearNValue;
+
+    return [
+      { name: '购房方案', value: buyingNetWorth, fill: '#00d4ff' },
+      { name: '股市投资', value: stockNetWorth, fill: '#ffc107' },
+    ];
+  }, [currentResult, stockResult, analysisYears]);
+
+  // CSV下载处理
+  const handleDownloadCSV = useCallback(() => {
+    const csv = generateCSV(xiamen, currentResult, stockResult, analysisYears, sdRentIfNotBuying, stockReturnRate);
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' }); // 加BOM支持中文
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `房产投资分析_${selectedPropertyType}_${(downPaymentPercent * 100).toFixed(0)}%首付_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [xiamen, currentResult, stockResult, analysisYears, sdRentIfNotBuying, stockReturnRate, selectedPropertyType, downPaymentPercent]);
 
   // Pareto前沿数据
   const paretoData = useMemo(() => {
@@ -447,6 +596,30 @@ export default function App() {
               </select>
             </div>
           </div>
+
+          {/* 股市对比参数 */}
+          <div className="param-section">
+            <h3>股市投资对比</h3>
+            <div className="param-row">
+              <label>美股年化收益率 (%)</label>
+              <input
+                type="number"
+                step="0.5"
+                value={stockReturnRate * 100}
+                onChange={e => setStockReturnRate(Number(e.target.value) / 100)}
+              />
+            </div>
+            <div className="info-box">
+              假设：首付+Closing Cost投入股市，继续租房
+            </div>
+          </div>
+
+          {/* 导出按钮 */}
+          <div className="param-section">
+            <button className="export-btn" onClick={handleDownloadCSV}>
+              📥 导出分析结果 (CSV)
+            </button>
+          </div>
         </div>
 
         {/* 中间：结果展示 */}
@@ -592,6 +765,94 @@ export default function App() {
                 <div className="flow-label">剩余现金</div>
                 <div className="flow-value">{formatCurrency(currentResult.remainingCash)}</div>
               </div>
+            </div>
+          </div>
+
+          {/* 股市投资对比 */}
+          <div className="stock-comparison-section">
+            <h3>vs 股市投资 (S&P 500 @ {(stockReturnRate * 100).toFixed(0)}%)</h3>
+            <div className="stock-comparison-grid">
+              <div className="stock-scenario">
+                <h4>方案A: 购房</h4>
+                <div className="stock-detail">
+                  <span className="label">投入资金:</span>
+                  <span className="value">{formatCurrency(currentResult.downPayment + currentResult.closingCosts)}</span>
+                </div>
+                <div className="stock-detail">
+                  <span className="label">{analysisYears}年后房产净值:</span>
+                  <span className="value">{formatCurrency(currentResult.year5Equity)}</span>
+                </div>
+                <div className="stock-detail">
+                  <span className="label">+ 剩余现金:</span>
+                  <span className="value">{formatCurrency(currentResult.remainingCash)}</span>
+                </div>
+                <div className="stock-detail">
+                  <span className="label">+ {analysisYears}年等效现金流:</span>
+                  <span className="value">{formatCurrency(currentResult.annualEffectiveCashflow * analysisYears)}</span>
+                </div>
+                <div className="stock-detail total">
+                  <span className="label">净资产总计:</span>
+                  <span className="value highlight-blue">
+                    {formatCurrency(currentResult.year5Equity + currentResult.remainingCash + currentResult.annualEffectiveCashflow * analysisYears)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="vs-divider">VS</div>
+
+              <div className="stock-scenario">
+                <h4>方案B: 投股市 + 租房</h4>
+                <div className="stock-detail">
+                  <span className="label">投入股市:</span>
+                  <span className="value">{formatCurrency(stockResult.initialInvestment)}</span>
+                </div>
+                <div className="stock-detail">
+                  <span className="label">{analysisYears}年后股票价值:</span>
+                  <span className="value">{formatCurrency(stockResult.yearNValue)}</span>
+                </div>
+                <div className="stock-detail">
+                  <span className="label">- {analysisYears}年租金支出:</span>
+                  <span className="value negative">-{formatCurrency(stockResult.totalRentPaid)}</span>
+                </div>
+                <div className="stock-detail">
+                  <span className="label">+ 剩余现金:</span>
+                  <span className="value">{formatCurrency(currentResult.remainingCash)}</span>
+                </div>
+                <div className="stock-detail total">
+                  <span className="label">净资产总计:</span>
+                  <span className="value highlight-yellow">
+                    {formatCurrency(stockResult.yearNValue - stockResult.totalRentPaid + currentResult.remainingCash)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 对比柱状图 */}
+            <div className="comparison-chart">
+              <ResponsiveContainer width="100%" height={150}>
+                <BarChart data={stockComparisonData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <YAxis type="category" dataKey="name" width={80} />
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  <Bar dataKey="value" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* 结论 */}
+            <div className={`comparison-verdict ${
+              (currentResult.year5Equity + currentResult.remainingCash + currentResult.annualEffectiveCashflow * analysisYears) >
+              (stockResult.yearNValue - stockResult.totalRentPaid + currentResult.remainingCash) ? 'positive' : 'negative'
+            }`}>
+              {(() => {
+                const buyingTotal = currentResult.year5Equity + currentResult.remainingCash + currentResult.annualEffectiveCashflow * analysisYears;
+                const stockTotal = stockResult.yearNValue - stockResult.totalRentPaid + currentResult.remainingCash;
+                const diff = buyingTotal - stockTotal;
+                return diff > 0
+                  ? `✅ 购房方案优于股市投资 ${formatCurrency(diff)}`
+                  : `⚠️ 股市投资优于购房方案 ${formatCurrency(-diff)}`;
+              })()}
             </div>
           </div>
         </div>
