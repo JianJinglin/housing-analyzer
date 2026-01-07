@@ -587,17 +587,16 @@ export default function App() {
             <div className="borrowers-list">
               {coBorrowers.map((b, i) => (
                 <div key={i} className="borrower-item">
+                  <button
+                    className="borrower-btn minus"
+                    onClick={() => handleRemoveBorrower(i)}
+                    disabled={coBorrowers.length <= 1}
+                    title="移除借款人"
+                  >
+                    −
+                  </button>
                   <span className="borrower-name">{b.name}</span>
                   <span className="borrower-income">{formatCurrency(b.monthlyIncome)}/月</span>
-                  {coBorrowers.length > 1 && (
-                    <button
-                      className="remove-btn"
-                      onClick={() => handleRemoveBorrower(i)}
-                      title="移除"
-                    >
-                      ✕
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
@@ -619,11 +618,12 @@ export default function App() {
                 className="borrower-input income"
               />
               <button
-                className="add-btn"
+                className="borrower-btn plus"
                 onClick={handleAddBorrower}
                 disabled={!newBorrowerName.trim() || !newBorrowerIncome}
+                title="添加借款人"
               >
-                + 添加
+                +
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-/* 房产投资分析器样式 */
+/* 房产投资分析器样式 - 金色高级主题 */
 
 * {
   box-sizing: border-box;
@@ -8,29 +8,30 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #e0e0e0;
+  background: linear-gradient(135deg, #1a1410 0%, #2d2418 50%, #1a1410 100%);
+  color: #e8e0d4;
 }
 
 .header {
   text-align: center;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 .header h1 {
   font-size: 1.8rem;
   margin: 0;
-  background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+  background: linear-gradient(90deg, #d4af37, #f4d160, #d4af37);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
 }
 
 .header p {
   margin: 5px 0 0;
-  color: #888;
+  color: #a89878;
   font-size: 0.9rem;
 }
 
@@ -44,18 +45,19 @@
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(45, 36, 24, 0.6);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   overflow-y: auto;
+  backdrop-filter: blur(10px);
 }
 
 .panel h2 {
   font-size: 1.2rem;
   margin: 0 0 15px;
-  color: #00d4ff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d4af37;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
   padding-bottom: 10px;
 }
 
@@ -67,7 +69,7 @@
 .param-section {
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 .param-section:last-child {
@@ -77,7 +79,7 @@
 .param-section h3 {
   font-size: 0.95rem;
   margin: 0 0 12px;
-  color: #ffc107;
+  color: #f4d160;
 }
 
 .param-row {
@@ -89,7 +91,7 @@
 
 .param-row label {
   font-size: 0.8rem;
-  color: #aaa;
+  color: #a89878;
 }
 
 .param-row input[type="number"],
@@ -97,27 +99,35 @@
 .param-row select {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  background: rgba(26, 20, 16, 0.8);
+  color: #e8e0d4;
   font-size: 0.9rem;
+}
+
+.param-row input[type="number"]:focus,
+.param-row input[type="text"]:focus,
+.param-row select:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
 }
 
 .param-row input[type="range"] {
   width: 100%;
-  accent-color: #00d4ff;
+  accent-color: #d4af37;
 }
 
 .slider-value {
   font-size: 0.8rem;
-  color: #00d4ff;
+  color: #d4af37;
   text-align: right;
 }
 
 .info-box {
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 6px;
   padding: 10px;
   margin-top: 10px;
@@ -125,7 +135,7 @@
 }
 
 .info-box strong {
-  color: #00d4ff;
+  color: #f4d160;
 }
 
 /* 借款人列表 */
@@ -136,9 +146,10 @@
 .borrower-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(26, 20, 16, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   border-radius: 6px;
   margin-bottom: 6px;
   font-size: 0.85rem;
@@ -146,46 +157,81 @@
 
 .borrower-name {
   flex: 1;
-  color: #00d4ff;
+  color: #f4d160;
   font-weight: 500;
 }
 
 .borrower-income {
-  color: #aaa;
+  color: #a89878;
 }
 
-.remove-btn {
-  background: rgba(255, 87, 87, 0.3);
-  border: none;
-  color: #ff5757;
-  width: 22px;
-  height: 22px;
+/* 借款人按钮 +/- */
+.borrower-btn {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  border: 2px solid;
+  font-size: 1.2rem;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  line-height: 1;
 }
 
-.remove-btn:hover {
-  background: rgba(255, 87, 87, 0.5);
+.borrower-btn.minus {
+  background: rgba(200, 80, 80, 0.2);
+  border-color: rgba(200, 80, 80, 0.5);
+  color: #c85050;
+}
+
+.borrower-btn.minus:hover:not(:disabled) {
+  background: rgba(200, 80, 80, 0.4);
+  border-color: #c85050;
+}
+
+.borrower-btn.minus:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.borrower-btn.plus {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #d4af37;
+}
+
+.borrower-btn.plus:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.4);
+  border-color: #d4af37;
+}
+
+.borrower-btn.plus:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 /* 添加借款人 */
 .add-borrower {
   display: flex;
   gap: 6px;
+  align-items: center;
 }
 
 .borrower-input {
   padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  background: rgba(26, 20, 16, 0.8);
+  color: #e8e0d4;
   font-size: 0.85rem;
+}
+
+.borrower-input:focus {
+  outline: none;
+  border-color: #d4af37;
 }
 
 .borrower-input.name {
@@ -197,25 +243,27 @@
   width: 80px;
 }
 
-.add-btn {
-  padding: 8px 12px;
-  background: rgba(0, 212, 255, 0.2);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  border-radius: 6px;
-  color: #00d4ff;
+/* 导出按钮 */
+.export-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #d4af37, #a88734);
+  border: none;
+  border-radius: 8px;
+  color: #1a1410;
+  font-size: 0.95rem;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  transition: background 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.add-btn:hover:not(:disabled) {
-  background: rgba(0, 212, 255, 0.3);
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
 }
 
-.add-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.export-btn:active {
+  transform: translateY(0);
 }
 
 /* 结果面板 */
@@ -232,42 +280,42 @@
 }
 
 .metric-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(45, 36, 24, 0.8);
   border-radius: 10px;
   padding: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.15);
 }
 
 .metric-card.primary {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15));
-  border-color: rgba(0, 212, 255, 0.3);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(168, 135, 52, 0.15));
+  border-color: rgba(212, 175, 55, 0.4);
 }
 
 .metric-card.warning {
-  background: rgba(255, 87, 87, 0.15);
-  border-color: rgba(255, 87, 87, 0.3);
+  background: rgba(200, 80, 80, 0.15);
+  border-color: rgba(200, 80, 80, 0.3);
 }
 
 .metric-card.highlight-green {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: rgba(76, 175, 80, 0.3);
+  background: rgba(120, 180, 80, 0.15);
+  border-color: rgba(120, 180, 80, 0.3);
 }
 
 .metric-label {
   font-size: 0.75rem;
-  color: #888;
+  color: #a89878;
   margin-bottom: 5px;
 }
 
 .metric-value {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #fff;
+  color: #f4d160;
 }
 
 .metric-sub {
   font-size: 0.75rem;
-  color: #666;
+  color: #7a6a5a;
   margin-top: 5px;
 }
 
@@ -275,7 +323,7 @@
 .comparison-section h3 {
   font-size: 1rem;
   margin: 0 0 10px;
-  color: #ffc107;
+  color: #f4d160;
 }
 
 .comparison-table {
@@ -288,11 +336,11 @@
 .comparison-table td {
   padding: 10px 12px;
   text-align: right;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 .comparison-table th {
-  color: #888;
+  color: #a89878;
   font-weight: normal;
 }
 
@@ -302,18 +350,18 @@
 }
 
 .comparison-table .positive {
-  color: #4caf50;
+  color: #78b450;
 }
 
 .comparison-table .negative {
-  color: #f44336;
+  color: #c85050;
 }
 
 /* 资金流向 */
 .flow-section h3 {
   font-size: 1rem;
   margin: 0 0 15px;
-  color: #ffc107;
+  color: #f4d160;
 }
 
 .flow-diagram {
@@ -324,174 +372,54 @@
 }
 
 .flow-item {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(45, 36, 24, 0.8);
   border-radius: 8px;
   padding: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   min-width: 100px;
   text-align: center;
 }
 
 .flow-item.source {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: rgba(0, 212, 255, 0.3);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(168, 135, 52, 0.15));
+  border-color: rgba(212, 175, 55, 0.4);
 }
 
 .flow-item.highlight {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: rgba(76, 175, 80, 0.3);
+  background: rgba(120, 180, 80, 0.15);
+  border-color: rgba(120, 180, 80, 0.3);
 }
 
 .flow-label {
   font-size: 0.7rem;
-  color: #888;
+  color: #a89878;
 }
 
 .flow-value {
   font-size: 1rem;
   font-weight: bold;
-  color: #fff;
+  color: #f4d160;
   margin-top: 5px;
 }
 
 .flow-arrow {
   font-size: 1.5rem;
-  color: #555;
-}
-
-/* 可视化面板 */
-.viz-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.chart-section {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  padding: 15px;
-}
-
-.chart-section h3 {
-  font-size: 0.9rem;
-  margin: 0 0 15px;
-  color: #ffc107;
-}
-
-.custom-tooltip {
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 10px 15px;
-  font-size: 0.8rem;
-}
-
-.custom-tooltip p {
-  margin: 3px 0;
-}
-
-.legend-custom {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 10px;
-  font-size: 0.8rem;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.dot.red {
-  background: #ff0000;
-}
-
-.dot.green {
-  background: #00ff00;
-}
-
-.dot.purple {
-  background: #8884d8;
-}
-
-/* 问题定义 */
-.problem-definition {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  padding: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.problem-definition h3 {
-  font-size: 0.9rem;
-  margin: 0 0 12px;
-  color: #ffc107;
-}
-
-.formula-box {
-  font-size: 0.8rem;
-  line-height: 1.6;
-}
-
-.formula-box p {
-  margin: 8px 0;
-}
-
-.formula-box ul {
-  margin: 5px 0;
-  padding-left: 20px;
-}
-
-.formula-box li {
-  margin: 4px 0;
-  color: #ccc;
-}
-
-/* 导出按钮 */
-.export-btn {
-  width: 100%;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #00d4ff, #7b2cbf);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 0.95rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.export-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
-}
-
-.export-btn:active {
-  transform: translateY(0);
+  color: #d4af37;
 }
 
 /* 股市对比部分 */
 .stock-comparison-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(45, 36, 24, 0.6);
   border-radius: 10px;
   padding: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   margin-top: 20px;
 }
 
 .stock-comparison-section h3 {
   font-size: 1rem;
   margin: 0 0 15px;
-  color: #ffc107;
+  color: #f4d160;
 }
 
 .stock-comparison-grid {
@@ -502,15 +430,16 @@
 }
 
 .stock-scenario {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(26, 20, 16, 0.6);
   border-radius: 8px;
   padding: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 .stock-scenario h4 {
   margin: 0 0 10px;
   font-size: 0.9rem;
-  color: #00d4ff;
+  color: #d4af37;
 }
 
 .stock-detail {
@@ -518,7 +447,7 @@
   justify-content: space-between;
   padding: 6px 0;
   font-size: 0.8rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.08);
 }
 
 .stock-detail:last-child {
@@ -526,26 +455,26 @@
 }
 
 .stock-detail .label {
-  color: #888;
+  color: #a89878;
 }
 
 .stock-detail .value {
-  color: #fff;
+  color: #e8e0d4;
   font-weight: 500;
 }
 
 .stock-detail .value.negative {
-  color: #f44336;
+  color: #c85050;
 }
 
 .stock-detail .value.highlight-blue {
-  color: #00d4ff;
+  color: #d4af37;
   font-size: 1rem;
   font-weight: bold;
 }
 
 .stock-detail .value.highlight-yellow {
-  color: #ffc107;
+  color: #78b450;
   font-size: 1rem;
   font-weight: bold;
 }
@@ -553,7 +482,7 @@
 .stock-detail.total {
   margin-top: 8px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 .vs-divider {
@@ -562,13 +491,13 @@
   justify-content: center;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #666;
+  color: #d4af37;
   padding: 0 10px;
 }
 
 .comparison-chart {
   margin-top: 15px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(26, 20, 16, 0.6);
   border-radius: 8px;
   padding: 10px;
 }
@@ -583,39 +512,141 @@
 }
 
 .comparison-verdict.positive {
-  background: rgba(76, 175, 80, 0.2);
-  border: 1px solid rgba(76, 175, 80, 0.4);
-  color: #4caf50;
+  background: rgba(120, 180, 80, 0.2);
+  border: 1px solid rgba(120, 180, 80, 0.4);
+  color: #78b450;
 }
 
 .comparison-verdict.negative {
-  background: rgba(255, 193, 7, 0.2);
-  border: 1px solid rgba(255, 193, 7, 0.4);
-  color: #ffc107;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #f4d160;
+}
+
+/* 可视化面板 */
+.viz-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chart-section {
+  background: rgba(26, 20, 16, 0.6);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.chart-section h3 {
+  font-size: 0.9rem;
+  margin: 0 0 15px;
+  color: #f4d160;
+}
+
+.custom-tooltip {
+  background: rgba(26, 20, 16, 0.95);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 0.8rem;
+}
+
+.custom-tooltip p {
+  margin: 3px 0;
+  color: #e8e0d4;
+}
+
+.legend-custom {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #a89878;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.red {
+  background: #c85050;
+}
+
+.dot.green {
+  background: #78b450;
+}
+
+.dot.purple {
+  background: #d4af37;
+}
+
+/* 问题定义 */
+.problem-definition {
+  background: rgba(45, 36, 24, 0.6);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.problem-definition h3 {
+  font-size: 0.9rem;
+  margin: 0 0 12px;
+  color: #f4d160;
+}
+
+.formula-box {
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.formula-box p {
+  margin: 8px 0;
+  color: #e8e0d4;
+}
+
+.formula-box ul {
+  margin: 5px 0;
+  padding-left: 20px;
+}
+
+.formula-box li {
+  margin: 4px 0;
+  color: #c8c0b4;
 }
 
 /* Footer */
 .footer {
   text-align: center;
   padding: 15px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(26, 20, 16, 0.8);
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
   font-size: 0.75rem;
-  color: #666;
+  color: #7a6a5a;
 }
 
 /* Recharts 样式覆盖 */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  stroke: rgba(255, 255, 255, 0.1);
+  stroke: rgba(212, 175, 55, 0.15);
 }
 
 .recharts-text {
-  fill: #888;
+  fill: #a89878;
   font-size: 0.7rem;
 }
 
 .recharts-legend-item-text {
-  color: #aaa !important;
+  color: #c8c0b4 !important;
 }
 
 /* 响应式 */
