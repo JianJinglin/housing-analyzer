@@ -40,8 +40,8 @@ interface CoBorrower {
 const LOAN_TYPES = {
   conventional: {
     name: 'Conventional (普通贷款)',
-    interestRate: 0.065,
-    minDownPayment: 0.2,
+    interestRate: 0.062,
+    minDownPayment: 0.035,
     pmi: 150,
   },
   va: {
@@ -560,7 +560,7 @@ export default function App() {
                   setCustomInterestRate(null); // 重置自定义利率
                 }}
               >
-                <option value="conventional">Conventional (普通贷款) - 20%首付起</option>
+                <option value="conventional">Conventional (普通贷款) - 3.5%首付起</option>
                 <option value="va">VA Loan (退伍军人贷款) - 0%首付</option>
               </select>
             </div>
